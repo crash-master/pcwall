@@ -14,6 +14,7 @@ def argController():
             print("\t-out: path to out dir\n");
             print("EXAMPLE: \n");
             print("\t python pcwall.py -search cats -out C:/wallpaper\n");
+            exit();
             pass
 
         if sys.argv[1] == "-s" or sys.argv[1] == "-search":
@@ -41,6 +42,9 @@ def loadPage(page_item):
     get_photo_list_link = url_photo_list + page_num + query_str;
     print("** Try to get the page with photo " + get_photo_list_link + "\n");
     response = requests.get(get_photo_list_link);
+    if response.status_code != 200:
+        print("!!!!!!!!!! Something wrong, I can`t access to server !!!!!!!!!!!");
+        exit();
     res = response.json();
     total_pages = res["total_pages"];
     res = res['results'];
