@@ -52,7 +52,7 @@ def loadPage(page_item):
 	photos = [];
 	print("** GET info about photos from page " + "\n");
 	for photo in res:
-		img_name = item.split("?")[0].split("/")[-1] + ".jpg";
+		img_name = photo["urls"]["full"].split("?")[0].split("/")[-1] + ".jpg";
 		path_to_img_for_check_on_exists = out_path + '/' + img_name;
 		if not os.path.exists(path_to_img_for_check_on_exists):
 			photo_info = requests.get(photo["links"]["self"] + client_id);
