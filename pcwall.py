@@ -14,7 +14,7 @@ def createParser ():
 		or 
 		python pcwall.py -s nature -out walpaper/nature
 		for linux''',
-		epilog = '''(c) Zeny and Oleg 2018. developers are not responsible for anything happen in case of this script usage  ;-)''')
+		epilog = '''(c) Eugene and Oleg 2018. Developers are not responsible for anything happen in case of this script usage  ;-)''')
 	parser.add_argument('-s', '--search', required=True)
 	parser.add_argument('-o', '--out', default='img')
 	parser.add_argument('-n', '--number', nargs='?', type=int, default=10)
