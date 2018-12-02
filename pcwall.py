@@ -1,39 +1,25 @@
+# usage:
+# python pcwall.py -s searchWord -out H:walpaper/images
+
 import requests, urllib, sys, os
+import argparse
 
 
 # FUNCS
-def argController():
-	global q, out_path;
-	if len(sys.argv) > 1:
-		if sys.argv[1] == "-h" or sys.argv[1] == "-help" or sys.argv[1] == "help":
-			#  print HELP
-			print("HELP \n");
-			print("args:\n");
-			print("\t-h or -help: call for help\n");
-			print("\t-s or -search: give me photos by my search query\n");
-			print("\t-out: path to out dir\n");
-			print("EXAMPLE: \n");
-			print("\t python pcwall.py -search cats -out C:/wallpaper\n");
-			exit();
-			pass
+def createParser ():
+	parser = argparse.ArgumentParser(
+		description = '''This is very useful program that allows you to get some new walpapers.
+		e.x. windows: 
+		python pcwall.py -s nature -out H:walpaper/nature 
+		or 
+		python pcwall.py -s nature -out walpaper/nature
+		for linux''',
+		epilog = '''(c) Zeny and Oleg 2018. developers are not responsible for anything happen in case of this script usage  ;-)''')
+	parser.add_argument('-s', '--search', required=True)
+	parser.add_argument('-o', '--out', default='img')
+	parser.add_argument('-n', '--number', nargs='?', type=int, default=10)
 
-		if sys.argv[1] == "-s" or sys.argv[1] == "-search":
-			q = sys.argv[2];
-			pass;
-
-		if sys.argv[3] == "-out":
-			out_path = sys.argv[4];
-			pass;
-	else:
-		exit();
-
-	if q == "":
-		print("Error, read help");
-		exit();
-	if out_path == "":
-		print("Error, read help");
-		exit();
-	pass
+	return parser
 
 
 def loadPage(page_item):
@@ -50,7 +36,6 @@ def loadPage(page_item):
 	res = res['results'];
 	length = len(res);
 	photos = [];
-	print("** GET info about photos from page " + "\n");
 	for photo in res:
 		img_name = photo["urls"]["full"].split("?")[0].split("/")[-1] + ".jpg";
 		path_to_img_for_check_on_exists = out_path + '/' + img_name;
@@ -60,34 +45,38 @@ def loadPage(page_item):
 
 	for item in photos:
 		img_name = item.split("?")[0].split("/")[-1] + ".jpg";
-		print("** GET photo " + item + "\n");
+		print("** GET photo [" + str(photo_counter + 1) + '] ' + item + "\n");
 		img = urllib.request.urlretrieve(item, out_path + '/' + img_name);
 		if img :
 			photo_counter += 1;
-
-	pass
+		if photo_counter >= maxPhotosAmmount:
+			return -1
 
 # APP
 
-q = "";
-out_path = "";
-argController();
-if not os.path.exists(out_path):
-	os.makedirs(out_path);
-	pass
+if __name__ == '__main__':
+	parser = createParser()
+	params = parser.parse_args(sys.argv[1:])
 
-total_pages = 1;
-client_id = "?client_id=111812491413a8045327ce7d8f9bdd0511c4aedfa3571b8b5133f65c79789703";
-url_photo_list = "https://api.unsplash.com/search/photos/" + client_id;
-page_item = 1;
-photo_counter = 0;
-query_str = "&query=" + q;
-while page_item <= total_pages:
-	loadPage(page_item);
-	page_item += 1;
-	print("************************\n");
-	print("Go to next page if exists\n");
-	pass
+	q = params.search
+	out_path = params.out
+	maxPhotosAmmount = params.number
 
-print("---- Photos was be downloaded ----");
-print("Query: " + q + "\nCount photos: " + str(photo_counter) + "   Count pages: " + str(total_pages));
+	if not os.path.exists(out_path):
+		os.makedirs(out_path);
+
+	total_pages = 1;
+	client_id = "?client_id=111812491413a8045327ce7d8f9bdd0511c4aedfa3571b8b5133f65c79789703";
+	url_photo_list = "https://api.unsplash.com/search/photos/" + client_id;
+	page_item = 1;
+	photo_counter = 0;
+	query_str = "&query=" + q;
+	while page_item <= total_pages:
+		if loadPage(page_item) == -1: # photos ammount
+			break
+		page_item += 1;
+		print("************************\n");
+		print("Go to next page if exists\n");
+
+	print("---- Photos were downloaded ----");
+	print("Query: " + q + "\nCount photos: " + str(photo_counter) + "   Count pages: " + str(page_item) + "   Total pages" + str(total_pages));
