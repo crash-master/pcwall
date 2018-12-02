@@ -55,9 +55,7 @@ def loadPage(page_item):
 		img_name = photo["urls"]["full"].split("?")[0].split("/")[-1] + ".jpg";
 		path_to_img_for_check_on_exists = out_path + '/' + img_name;
 		if not os.path.exists(path_to_img_for_check_on_exists):
-			photo_info = requests.get(photo["links"]["self"] + client_id);
-			photo_info = photo_info.json();
-			if photo_info["width"] > photo_info["height"]:
+			if photo["width"] > photo["height"]:
 				photos.append(photo["urls"]["full"]);
 
 	for item in photos:
