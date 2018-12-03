@@ -3,6 +3,7 @@
 
 import requests, urllib, sys, os
 import argparse
+import time
 
 
 # FUNCS
@@ -14,69 +15,117 @@ def createParser ():
 		or 
 		python pcwall.py -s nature -out walpaper/nature
 		for linux''',
-		epilog = '''(c) Eugene and Oleg 2018. Developers are not responsible for anything happen in case of this script usage  ;-)''')
+		epilog = '''(c) Eugene and Oleg 2018. Developers are not responsible for anything happen in case of this script usage  -)''')
 	parser.add_argument('-s', '--search', required=True)
 	parser.add_argument('-o', '--out', default='img')
 	parser.add_argument('-n', '--number', nargs='?', type=int, default=10)
+	parser.add_argument('-t', '--topics', nargs='?', type=str)  # topics.txt e.x.
 
 	return parser
 
 
-def loadPage(page_item):
-	global total_pages, photo_counter;
-	page_num = "&page=" + str(page_item);
-	get_photo_list_link = url_photo_list + page_num + query_str;
-	print("** Try to get the page with photo " + get_photo_list_link + "\n");
-	response = requests.get(get_photo_list_link);
+def loadPage(page_item, maxPhotosAmount):
+	global total_pages, photo_counter
+	page_num = "&page=" + str(page_item)
+	get_photo_list_link = url_photo_list + page_num + query_str
+	print("** Try to get the page with photo " + get_photo_list_link + "\n")
+	response = requests.get(get_photo_list_link)
 	if response.status_code != 200:
-		print("!!!!!!!!!! Something wrong, I can`t access to server !!!!!!!!!!!");
-		exit();
-	res = response.json();
-	total_pages = res["total_pages"];
-	res = res['results'];
-	length = len(res);
-	photos = [];
+		print("!!!!!!!!!! Something wrong, I can`t access to server !!!!!!!!!!!")
+		exit()
+	res = response.json()
+	total_pages = res["total_pages"]
+	res = res['results']
+	# print(res['results'])
+	# length = len(res)
+	# print(length)
+	photos = []
 	for photo in res:
-		img_name = photo["urls"]["full"].split("?")[0].split("/")[-1] + ".jpg";
-		path_to_img_for_check_on_exists = out_path + '/' + img_name;
+		img_name = photo["urls"]["full"].split("?")[0].split("/")[-1] + ".jpg"
+		path_to_img_for_check_on_exists = out_path + '/' + img_name
 		if not os.path.exists(path_to_img_for_check_on_exists):
 			if photo["width"] > photo["height"]:
-				photos.append(photo["urls"]["full"]);
+				photos.append(photo["urls"]["full"])
 
 	for item in photos:
-		img_name = item.split("?")[0].split("/")[-1] + ".jpg";
-		print("** GET photo [" + str(photo_counter + 1) + '] ' + item + "\n");
-		img = urllib.request.urlretrieve(item, out_path + '/' + img_name);
+		img_name = item.split("?")[0].split("/")[-1] + ".jpg"
+		print("** GET photo [" + str(photo_counter + 1) + '] ' + item + "\n")
+		img = urllib.request.urlretrieve(item, out_path + '/' + img_name)
 		if img :
-			photo_counter += 1;
-		if photo_counter >= maxPhotosAmmount:
+			photo_counter += 1
+		if photo_counter >= maxPhotosAmount:
 			return -1
+
+def loadTopics(topics_path):
+	# print(topics_path)
+	if topics_path is None:
+		return 0
+
+	try:
+		with open(topics_path, 'r', encoding='utf-8') as f:
+			str1 = f.read()
+			str2 = str1.rstrip("\n")
+	except IOError:
+		# print("Could not open file!") if params.topics != "topics.txt" else params.topics
+		print("Could not open file!")
+		return 0
+
+	topics = str2.split(', ')
+	return topics
 
 # APP
 
 if __name__ == '__main__':
+
+	start_time = time.time()
+
 	parser = createParser()
 	params = parser.parse_args(sys.argv[1:])
 
 	q = params.search
 	out_path = params.out
-	maxPhotosAmmount = params.number
+	maxPhotosAmount = params.number
+
+	t_path = loadTopics(params.topics)
+
+	if t_path:
+		print(len(t_path))
+		print(t_path)
 
 	if not os.path.exists(out_path):
-		os.makedirs(out_path);
+		os.makedirs(out_path)
 
-	total_pages = 1;
-	client_id = "?client_id=111812491413a8045327ce7d8f9bdd0511c4aedfa3571b8b5133f65c79789703";
-	url_photo_list = "https://api.unsplash.com/search/photos/" + client_id;
-	page_item = 1;
-	photo_counter = 0;
-	query_str = "&query=" + q;
+	total_pages = 1
+	client_id = "?client_id=111812491413a8045327ce7d8f9bdd0511c4aedfa3571b8b5133f65c79789703"
+	url_photo_list = "https://api.unsplash.com/search/photos/" + client_id
+	page_item = 1
+	photo_counter = 0
+
+	# Please, rewrite down section in a proper way.
+
+	# if topics and len(topics) > 1:
+	# 	print(len(topics))
+	# 	# print(topics)
+	# 	for q in topics:
+	# 		query_str = "&query=" + q
+	# 		while page_item <= total_pages:
+	# 			if loadPage(page_item) == -1:  # photos amount
+	# 				break
+	# 			page_item += 1
+	# 			print("************************\n")
+	# 			print("Go to next page if exists\n")
+	# else:
+	print(q)
+	query_str = "&query=" + q
 	while page_item <= total_pages:
-		if loadPage(page_item) == -1: # photos ammount
+		print(page_item)
+		if loadPage(page_item, maxPhotosAmount) == -1:  # photos amount
 			break
-		page_item += 1;
-		print("************************\n");
-		print("Go to next page if exists\n");
+		page_item += 1
+		# print("************************\n")
+		# print("Go to next page if exists\n")
 
-	print("---- Photos were downloaded ----");
-	print("Query: " + q + "\nCount photos: " + str(photo_counter) + "   Count pages: " + str(page_item) + "   Total pages" + str(total_pages));
+	print("---- Photos were downloaded ----")
+	print("Query: " + q + "\nCount photos: " + str(photo_counter) + "   Count pages: " + str(page_item) + "   Total pages" + str(total_pages))
+	elapsed_time = time.time() - start_time
+	print("Total time: %fs" % elapsed_time)
