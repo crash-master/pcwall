@@ -121,7 +121,6 @@ if __name__ == '__main__':
 		# print(q)
 		query_str = "&query=" + q
 		while page_item <= total_pages:
-			print(page_item)
 			if loadPage(page_item, maxPhotosAmount) == -1:  # photos amount
 				break
 			page_item += 1
