@@ -131,4 +131,4 @@ if __name__ == '__main__':
 	print("Count photos: " + str(general_count) + " from Total images " + str(total_total_pages * 10))
 
 	elapsed_time = time.time() - start_time
-	print("Total time: %fs" % elapsed_time)
+	print("Total time: %.2fs" % elapsed_time)
