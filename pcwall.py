@@ -1,6 +1,8 @@
 # usage:
 # python pcwall.py -s searchWord -out H:walpaper/images
 
+# /usr/bin/python3 pcwall.py -s people -n 3 -t topics.txt # in this case -s not used because you have topics.txt
+
 import requests, urllib, sys, os
 import argparse
 import time
@@ -51,13 +53,13 @@ def loadPage(page_item, maxPhotosAmount):
 		img_name = item.split("?")[0].split("/")[-1] + ".jpg"
 		print("** GET photo [" + str(photo_counter + 1) + '] ' + item + "\n")
 		img = urllib.request.urlretrieve(item, out_path + '/' + img_name)
-		if img :
+		if img:
 			photo_counter += 1
+
 		if photo_counter >= maxPhotosAmount:
 			return -1
 
 def loadTopics(topics_path):
-	# print(topics_path)
 	if topics_path is None:
 		return 0
 
@@ -86,11 +88,7 @@ if __name__ == '__main__':
 	out_path = params.out
 	maxPhotosAmount = params.number
 
-	t_path = loadTopics(params.topics)
-
-	if t_path:
-		print(len(t_path))
-		print(t_path)
+	topics = loadTopics(params.topics)
 
 	if not os.path.exists(out_path):
 		os.makedirs(out_path)
@@ -100,32 +98,38 @@ if __name__ == '__main__':
 	url_photo_list = "https://api.unsplash.com/search/photos/" + client_id
 	page_item = 1
 	photo_counter = 0
+	general_count = 0
+	total_total_pages = 0
 
-	# Please, rewrite down section in a proper way.
+	# Please, rewrite down section in a proper way if you can/want.
 
-	# if topics and len(topics) > 1:
-	# 	print(len(topics))
-	# 	# print(topics)
-	# 	for q in topics:
-	# 		query_str = "&query=" + q
-	# 		while page_item <= total_pages:
-	# 			if loadPage(page_item) == -1:  # photos amount
-	# 				break
-	# 			page_item += 1
-	# 			print("************************\n")
-	# 			print("Go to next page if exists\n")
-	# else:
-	print(q)
-	query_str = "&query=" + q
-	while page_item <= total_pages:
-		print(page_item)
-		if loadPage(page_item, maxPhotosAmount) == -1:  # photos amount
-			break
-		page_item += 1
-		# print("************************\n")
-		# print("Go to next page if exists\n")
+	if topics and len(topics) > 1:
+		# print(len(topics))
+		# print(topics)
+		for q in topics:
+			photo_counter = 0
+			query_str = "&query=" + q
+			while page_item <= total_pages:
+				if loadPage(page_item, maxPhotosAmount) == -1:  # photos amount
+					break
+				page_item += 1
 
-	print("---- Photos were downloaded ----")
-	print("Query: " + q + "\nCount photos: " + str(photo_counter) + "   Count pages: " + str(page_item) + "   Total pages" + str(total_pages))
+			general_count += photo_counter
+			total_total_pages += total_pages
+		print("Query: " + str(topics))
+	else:
+		# print(q)
+		query_str = "&query=" + q
+		while page_item <= total_pages:
+			print(page_item)
+			if loadPage(page_item, maxPhotosAmount) == -1:  # photos amount
+				break
+			page_item += 1
+		general_count = photo_counter
+		total_total_pages += total_pages
+		print("Query: " + q)
+
+	print("Count photos: " + str(general_count) + " from Total images " + str(total_total_pages * 10))
+
 	elapsed_time = time.time() - start_time
 	print("Total time: %fs" % elapsed_time)

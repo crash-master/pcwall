@@ -1,1 +1,1 @@
-people, money, horse
+cat, money, horse
