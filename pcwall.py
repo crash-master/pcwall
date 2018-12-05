@@ -33,14 +33,15 @@ def loadPage(page_item, maxPhotosAmount):
 	print("** Try to get the page with photo " + get_photo_list_link + "\n")
 	response = requests.get(get_photo_list_link)
 	if response.status_code != 200:
-		print("!!!!!!!!!! Something wrong, I can`t access to server !!!!!!!!!!!")
-		exit()
+		print("! Something wrong, I can`t access to server")
+		return -1;
+	if response.headers['X-Ratelimit-Remaining'] == 0:
+		print("! End of the number of requests")
+		return -1;
+	print("** " + str(response.headers['X-Ratelimit-Remaining']) + " requests left\n");
 	res = response.json()
 	total_pages = res["total_pages"]
 	res = res['results']
-	# print(res['results'])
-	# length = len(res)
-	# print(length)
 	photos = []
 	for photo in res:
 		img_name = photo["urls"]["full"].split("?")[0].split("/")[-1] + ".jpg"
