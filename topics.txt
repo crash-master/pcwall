@@ -1,1 +1,1 @@
-cat, money, horse
+plane, nature, horse, elefant, electronic, microscheme

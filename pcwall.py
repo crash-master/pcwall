@@ -36,7 +36,7 @@ def loadPage(page_item, maxPhotosAmount):
 		print("! Something wrong, I can`t access to server")
 		return -1;
 	if response.headers['X-Ratelimit-Remaining'] == 0:
-		print("! End of the number of requests")
+		print("Rate Limit Exceeded. Try one more time in an hour.")
 		return -1;
 	print("** " + str(response.headers['X-Ratelimit-Remaining']) + " requests left\n");
 	res = response.json()
